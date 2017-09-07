@@ -8,6 +8,44 @@
 
 import Foundation
 
+struct CalculatorDisplay {
+    private var rawValue = "0"
+    private var hasValue = false
+    public mutating func clear(){
+        rawValue = "0"
+        hasValue = false
+    }
+    public mutating func append(digit: String){
+        if hasValue {
+            rawValue += digit
+        }
+        else if digit != "0" {
+            rawValue = digit
+            hasValue = true
+        }
+    }
+    public mutating func negate(){
+        if let numeric = Double(rawValue){
+            rawValue = "\(-numeric)"
+        }
+    }
+    public mutating func decimal(){
+        if rawValue.index(of:".") == nil {
+            rawValue += "."
+            hasValue = true
+        }
+    }
+    public var value: String {
+        get {
+            return rawValue
+        }
+        set(newValue) {
+            rawValue = newValue
+            hasValue = (newValue != "0")
+        }
+    }
+}
+
 struct CalculatorBrain {
     private var acc: Double
     private var memory: Double
@@ -71,7 +109,20 @@ struct CalculatorBrain {
         "=": Operation.equals
     ]
     
-    public func interpret(input: String){
+    public func interpret(button: String){
         // in Germany, it is impossible to compare two companies in ppt
+        let function = operations[button] {
+            switch(function){
+                case .binary:
+                    function(acc, input)
+                case .unary:
+                case .constant:
+                case .equals:
+                default:
+            }
+        }
+        else {
+            
+        }
     }
 }
