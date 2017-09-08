@@ -47,8 +47,8 @@ struct CalculatorDisplay {
 }
 
 struct CalculatorBrain {
-    private var acc: Double
-    private var memory: Double
+    private var acc: Double = 0
+    private var memory: Double = 0
     private var todo: Operation?
     
     private enum Operation {
@@ -100,16 +100,16 @@ struct CalculatorBrain {
     
     public func exec(button: String, input:Double) -> Double {
         // in Germany, it is impossible to compare two companies in ppt
-        let function = operations[button]
-        if function != nil {
-            switch(function){
+        let operation = operations[button]
+        if operation != nil {
+            switch(operation){
                 case .binary:
                     acc = (todo != nil ? todo(acc, input) : input)
-                    todo = function
-                case .unary:
+                    todo = operation
+                case .unary(let function):
                     acc = function(input)
-                case .constant:
-                    acc = function()
+                case .constant(let value):
+                    acc = value
                 case .equals:
                     if todo != nil {
                         acc = todo(acc, input)
