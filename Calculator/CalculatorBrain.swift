@@ -30,7 +30,7 @@ struct CalculatorDisplay {
         }
     }
     public mutating func decimal(){
-        if rawValue.index(of:".") == nil {
+        if rawValue.range(of: ".") == nil {
             rawValue += "."
             hasValue = true
         }
@@ -49,7 +49,7 @@ struct CalculatorDisplay {
 struct CalculatorBrain {
     private var acc: Double = 0
     private var memory: Double = 0
-    private var todo: Operation?
+    private var todo: ((Double, Double) -> Double)?
     
     private enum Operation {
         case memory
@@ -98,24 +98,28 @@ struct CalculatorBrain {
         "=": Operation.equals
     ]
     
-    public func exec(button: String, input:Double) -> Double {
+    public mutating func exec(button: String, input:Double) -> Double {
         // in Germany, it is impossible to compare two companies in ppt
-        let operation = operations[button]
-        if operation != nil {
+        if let operation = operations[button] {
             switch(operation){
-                case .binary:
-                    acc = (todo != nil ? todo(acc, input) : input)
-                    todo = operation
-                case .unary(let function):
-                    acc = function(input)
-                case .constant(let value):
-                    acc = value
-                case .equals:
-                    if todo != nil {
-                        acc = todo(acc, input)
-                    }
-                default:
-                    acc = acc
+            case .binary(let function):
+                if todo != nil {
+                    acc = todo!(acc, input)
+                }
+                else {
+                    acc = input
+                }
+                todo = function
+            case .unary(let function):
+                acc = function(input)
+            case .constant(let value):
+                acc = value
+            case .equals:
+                if todo != nil {
+                    acc = todo!(acc, input)
+                }
+            default:
+                return acc
             }
             return acc
         }
