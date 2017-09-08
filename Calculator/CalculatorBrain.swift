@@ -2,8 +2,8 @@
 //  CalculatorBrain.swift
 //  Calculator
 //
-//  Created by Student on 9/6/17.
-//  Copyright © 2017 Student. All rights reserved.
+//  Created by Brandon Cecilio on 9/6/17.
+//  Copyright © 2017 Brandon Cecilio. All rights reserved.
 //
 
 import Foundation
@@ -49,8 +49,7 @@ struct CalculatorDisplay {
 struct CalculatorBrain {
     private var acc: Double
     private var memory: Double
-    private var currentInput = "0"
-    private var pending = false
+    private var todo: Operation?
     
     private enum Operation {
         case memory
@@ -60,37 +59,27 @@ struct CalculatorBrain {
         case equals
     }
     
-    public mutating func clear(){
-        if currentInput != "0" {
-            acc = 0
-        }
-        else {
-            currentInput = "0"
-        }
+    public mutating func reset(){
+        // should reset function stack
+        acc = 0
+        todo = nil
     }
     
-    public mutating func appendChar(input: String){
-        if currentInput == "0" {
-            currentInput += input
-        }
-        else {
-            currentInput = input
-        }
-    }
     public mutating func memClear(){
         memory = 0
     }
     
-    public mutating func memRecall(){
-        currentInput = "\(memory)"
+    public mutating func memRecall() -> Double {
+        return memory
     }
     
-    public mutating func memStore(){
-        memory = Double(currentInput)!
+    public mutating func memStore(input:Double){
+        memory = input
     }
     
-    public mutating func memAdd(){
-        memory += Double(currentInput)!
+    public mutating func memAdd(input:Double) -> Double {
+        memory += input
+        return memory
     }
     
     private var operations: [String:Operation] = [
@@ -109,20 +98,29 @@ struct CalculatorBrain {
         "=": Operation.equals
     ]
     
-    public func interpret(button: String){
+    public func exec(button: String, input:Double) -> Double {
         // in Germany, it is impossible to compare two companies in ppt
-        let function = operations[button] {
+        let function = operations[button]
+        if function != nil {
             switch(function){
                 case .binary:
-                    function(acc, input)
+                    acc = (todo != nil ? todo(acc, input) : input)
+                    todo = function
                 case .unary:
+                    acc = function(input)
                 case .constant:
+                    acc = function()
                 case .equals:
+                    if todo != nil {
+                        acc = todo(acc, input)
+                    }
                 default:
+                    acc = acc
             }
+            return acc
         }
         else {
-            
+            return input
         }
     }
 }
