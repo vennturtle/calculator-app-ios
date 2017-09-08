@@ -25,8 +25,11 @@ struct CalculatorDisplay {
         }
     }
     public mutating func negate(){
-        if let numeric = Double(rawValue){
-            rawValue = "\(-numeric)"
+        if let index = rawValue.range(of: "-") {
+            rawValue.remove(at: index.lowerBound)
+        }
+        else {
+            rawValue.insert("-", at: rawValue.startIndex)
         }
     }
     public mutating func decimal(){
@@ -48,6 +51,7 @@ struct CalculatorDisplay {
 
 struct CalculatorBrain {
     private var acc: Double = 0
+    private var lastOperation: (((Double, Double) -> Double), Double)?
     private var memory: Double = 0
     private var todo: ((Double, Double) -> Double)?
     
@@ -63,6 +67,7 @@ struct CalculatorBrain {
         // should reset function stack
         acc = 0
         todo = nil
+        lastOperation = nil
     }
     
     public mutating func memClear(){
@@ -93,8 +98,8 @@ struct CalculatorBrain {
         "√": Operation.unary({sqrt($0)}),
         "x²": Operation.unary({$0 * $0}),
         "±": Operation.unary({-$0}),
-        "π": Operation.constant(3.14159265),
-        "e": Operation.constant(2.71828182),
+        "π": Operation.constant(Double.pi),
+        "e": Operation.constant(M_E),
         "=": Operation.equals
     ]
     
@@ -115,8 +120,12 @@ struct CalculatorBrain {
             case .constant(let value):
                 acc = value
             case .equals:
-                if todo != nil {
+                if let (function, last) = lastOperation {
+                    acc = function(acc, last)
+                }
+                else if todo != nil {
                     acc = todo!(acc, input)
+                    lastOperation = (todo!, input)
                 }
             default:
                 return acc

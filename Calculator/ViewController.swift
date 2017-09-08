@@ -2,16 +2,17 @@
 //  ViewController.swift
 //  Calculator
 //
-//  Created by Student on 9/5/17.
-//  Copyright © 2017 Student. All rights reserved.
+//  Created by Brandon Cecilio 9/5/17.
+//  Copyright © 2017 Brandon Cecilio. All rights reserved.
 //
 
 import UIKit
 
 class ViewController: UIViewController {
 
-    @IBOutlet weak var output: UILabel!
     @IBOutlet weak var history: UILabel!
+    @IBOutlet weak var output: UILabel!
+    var userIsTyping = false
     
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -26,6 +27,10 @@ class ViewController: UIViewController {
     private var display: CalculatorDisplay = CalculatorDisplay()
     
     @IBAction func enterDig(_ sender: UIButton) {
+        if !userIsTyping {
+            display.clear()
+            userIsTyping = true
+        }
         display.append(digit: sender.currentTitle!)
         output.text = display.value
     }
@@ -36,19 +41,24 @@ class ViewController: UIViewController {
     }
     
     @IBAction func decimate(_ sender: UIButton) {
+        if !userIsTyping {
+            display.clear()
+            userIsTyping = true
+        }
         display.decimal()
         output.text = display.value
     }
     
     @IBAction func clear(_ sender: UIButton) {
-        if display.value == "0" {
+        display.clear()
+        if display.value == "0" || !userIsTyping {
             brain.reset()
         }
-        else {
-            display.clear()
-        }
+        output.text = display.value
+        userIsTyping = false
     }
     @IBAction func operate(_ sender: UIButton) {
+        userIsTyping = false
         let newValue = brain.exec(button: sender.currentTitle!, input: Double(display.value)!)
         display.value = "\(newValue)"
         output.text = display.value
