@@ -8,6 +8,22 @@
 
 import Foundation
 
+struct CalculatorMemory {
+    private var acc = 0.0
+    public var value: Double {
+        get {
+            return acc
+        }
+        set {
+            acc = newValue
+        }
+    }
+    public mutating func memAdd(input: Double) -> Double {
+        acc += input
+        return acc
+    }
+}
+
 struct CalculatorDisplay {
     private var rawValue = "0"
     private var hasValue = false
