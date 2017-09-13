@@ -37,6 +37,10 @@ class ViewController: UIViewController {
     }
     
     @IBAction func negate(_ sender: UIButton) {
+        if !userIsTyping {
+            display.clear()
+            userIsTyping = true
+        }
         display.negate()
         output.text = display.value
     }

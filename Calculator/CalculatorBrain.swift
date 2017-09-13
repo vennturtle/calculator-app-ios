@@ -10,18 +10,25 @@ import Foundation
 
 struct CalculatorDisplay {
     private var rawValue = "0"
-    private var hasValue = false
+    
+    public var hasValue: Bool {
+        get {
+            return rawValue != "0"
+        }
+    }
+    
     public mutating func clear(){
         rawValue = "0"
-        hasValue = false
     }
     public mutating func append(digit: String){
-        if hasValue {
+        if rawValue == "-0" {
+            rawValue = "-\(digit)"
+        }
+        else if hasValue {
             rawValue += digit
         }
         else if digit != "0" {
             rawValue = digit
-            hasValue = true
         }
     }
     public mutating func negate(){
@@ -35,7 +42,6 @@ struct CalculatorDisplay {
     public mutating func decimal(){
         if rawValue.range(of: ".") == nil {
             rawValue += "."
-            hasValue = true
         }
     }
     public var value: String {
@@ -44,7 +50,6 @@ struct CalculatorDisplay {
         }
         set(newValue) {
             rawValue = newValue
-            hasValue = (newValue != "0")
         }
     }
 }
