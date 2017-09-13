@@ -8,22 +8,6 @@
 
 import Foundation
 
-struct CalculatorMemory {
-    private var acc = 0.0
-    public var value: Double {
-        get {
-            return acc
-        }
-        set {
-            acc = newValue
-        }
-    }
-    public mutating func memAdd(input: Double) -> Double {
-        acc += input
-        return acc
-    }
-}
-
 struct CalculatorDisplay {
     private var rawValue = "0"
     private var hasValue = false
@@ -68,11 +52,9 @@ struct CalculatorDisplay {
 struct CalculatorBrain {
     private var acc: Double = 0
     private var lastOperation: (((Double, Double) -> Double), Double)?
-    private var memory: Double = 0
     private var todo: ((Double, Double) -> Double)?
     
     private enum Operation {
-        case memory
         case constant(Double)
         case unary((Double) -> Double)
         case binary((Double, Double) -> Double)
@@ -84,23 +66,6 @@ struct CalculatorBrain {
         acc = 0
         todo = nil
         lastOperation = nil
-    }
-    
-    public mutating func memClear(){
-        memory = 0
-    }
-    
-    public mutating func memRecall() -> Double {
-        return memory
-    }
-    
-    public mutating func memStore(input:Double){
-        memory = input
-    }
-    
-    public mutating func memAdd(input:Double) -> Double {
-        memory += input
-        return memory
     }
     
     private var operations: [String:Operation] = [

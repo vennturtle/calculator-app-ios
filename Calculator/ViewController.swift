@@ -24,6 +24,7 @@ class ViewController: UIViewController {
         // Dispose of any resources that can be recreated.
     }
     private var brain: CalculatorBrain = CalculatorBrain()
+    private var memory = 0.0
     private var display: CalculatorDisplay = CalculatorDisplay()
     
     @IBAction func enterDig(_ sender: UIButton) {
@@ -60,8 +61,29 @@ class ViewController: UIViewController {
     @IBAction func operate(_ sender: UIButton) {
         userIsTyping = false
         let newValue = brain.exec(button: sender.currentTitle!, input: Double(display.value)!)
-        display.value = "\(newValue)"
+        display.value = String(newValue)
         output.text = display.value
+    }
+    
+    @IBAction func memoryOperate(_ sender: UIButton) {
+        let function = sender.currentTitle!
+        switch(function){
+        case "MC":
+            memory = 0.0
+        case "MR":
+            display.value = String(memory)
+            output.text = display.value
+            userIsTyping = false
+        case "MS":
+            memory = Double(display.value)!
+        case "M+":
+            memory += Double(display.value)!
+            display.value = String(memory)
+            output.text = display.value
+            userIsTyping = false
+        default:
+            output.text = display.value
+        }
     }
 }
 

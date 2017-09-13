@@ -127,6 +127,9 @@
                                 <state key="normal" title="MS">
                                     <color key="titleColor" white="1" alpha="1" colorSpace="calibratedWhite"/>
                                 </state>
+                                <connections>
+                                    <action selector="memoryOperate:" destination="BYZ-38-t0r" eventType="touchUpInside" id="QhI-bp-VSA"/>
+                                </connections>
                             </button>
                             <button opaque="NO" contentMode="scaleToFill" fixedFrame="YES" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="9vT-aL-gz5">
                                 <rect key="frame" x="290" y="262" width="64" height="64"/>
@@ -148,6 +151,9 @@
                                 <state key="normal" title="M+">
                                     <color key="titleColor" white="1" alpha="1" colorSpace="calibratedWhite"/>
                                 </state>
+                                <connections>
+                                    <action selector="memoryOperate:" destination="BYZ-38-t0r" eventType="touchUpInside" id="GVe-Hv-qGQ"/>
+                                </connections>
                             </button>
                             <button opaque="NO" contentMode="scaleToFill" fixedFrame="YES" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="lKV-bE-u38">
                                 <rect key="frame" x="92" y="196" width="64" height="64"/>
@@ -157,6 +163,9 @@
                                 <state key="normal" title="MC">
                                     <color key="titleColor" white="1" alpha="1" colorSpace="calibratedWhite"/>
                                 </state>
+                                <connections>
+                                    <action selector="memoryOperate:" destination="BYZ-38-t0r" eventType="touchUpInside" id="Cjh-QM-get"/>
+                                </connections>
                             </button>
                             <button opaque="NO" contentMode="scaleToFill" fixedFrame="YES" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="8VN-rB-HIM">
                                 <rect key="frame" x="158" y="196" width="64" height="64"/>
@@ -166,6 +175,9 @@
                                 <state key="normal" title="MR">
                                     <color key="titleColor" white="1" alpha="1" colorSpace="calibratedWhite"/>
                                 </state>
+                                <connections>
+                                    <action selector="memoryOperate:" destination="BYZ-38-t0r" eventType="touchUpInside" id="jdm-gX-8te"/>
+                                </connections>
                             </button>
                             <button opaque="NO" contentMode="scaleToFill" fixedFrame="YES" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="hWP-XV-Css">
                                 <rect key="frame" x="20" y="460" width="64" height="64"/>
