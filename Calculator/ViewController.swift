@@ -23,10 +23,12 @@ class ViewController: UIViewController {
         super.didReceiveMemoryWarning()
         // Dispose of any resources that can be recreated.
     }
+    
     private var brain: CalculatorBrain = CalculatorBrain()
     private var memory = 0.0
     private var display: CalculatorDisplay = CalculatorDisplay()
     
+    // handles input whenever user taps on a digit button
     @IBAction func enterDig(_ sender: UIButton) {
         if !userIsTyping {
             display.clear()

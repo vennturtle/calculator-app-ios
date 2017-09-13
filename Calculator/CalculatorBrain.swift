@@ -124,7 +124,7 @@ struct CalculatorBrain {
                 }
                 lastButton = nil
             case .constant(let value):
-                acc = value
+                return value
             case .equals:
                 if pendingOperation == nil && lastOperation == nil {
                     acc = input
