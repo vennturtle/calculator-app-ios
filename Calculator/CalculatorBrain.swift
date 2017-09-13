@@ -8,18 +8,23 @@
 
 import Foundation
 
+// Stores the value currently being entered by the user, as a string
 struct CalculatorDisplay {
     private var rawValue = "0"
     
+    // computed property detecting if the current input is at its default state
     public var hasValue: Bool {
         get {
             return rawValue != "0"
         }
     }
     
+    // resets the current input
     public mutating func clear(){
         rawValue = "0"
     }
+    
+    // adds a digit to the end of the current input
     public mutating func append(digit: String){
         if rawValue == "-0" {
             rawValue = "-\(digit)"
@@ -31,19 +36,25 @@ struct CalculatorDisplay {
             rawValue = digit
         }
     }
+    
+    // adds or removes a negative sign to the end of the current input
     public mutating func negate(){
-        if let index = rawValue.range(of: "-") {
+        if let index = rawValue.range(of: "-") { // detect if negative sign is currently present
             rawValue.remove(at: index.lowerBound)
         }
         else {
             rawValue.insert("-", at: rawValue.startIndex)
         }
     }
+    
+    // adds a decimal point to the end of the current input, if one does not already exist
     public mutating func decimal(){
-        if rawValue.range(of: ".") == nil {
+        if rawValue.range(of: ".") == nil { // detect if decimal point is currently present
             rawValue += "."
         }
     }
+    
+    // computed property for accessing the current value of the input
     public var value: String {
         get {
             return rawValue
@@ -54,13 +65,24 @@ struct CalculatorDisplay {
     }
 }
 
+// Describes the logic behind an operating calculator
 struct CalculatorBrain {
+    // current working value
     private var acc: Double = 0
+    
+    // next operation that is waiting on an input from the user to be completed
     private var pendingOperation: ((Double, Double) -> Double)?
+    
+    // last completed operation, allows user to repeat operation upon pressing "equals" button
     private var lastOperation: (((Double, Double) -> Double), Double)?
+    
+    // current operation history
     private var history = "0"
+    
+    // last-pressed button
     private var lastButton: String?
     
+    // describes types of operations calculator can do, mostly defined as closures
     private enum Operation {
         case constant(Double)
         case unary((Double) -> Double)
@@ -68,15 +90,7 @@ struct CalculatorBrain {
         case equals
     }
     
-    public mutating func reset(){
-        // should reset function stack
-        acc = 0
-        pendingOperation = nil
-        lastOperation = nil
-        history = "0"
-        lastButton = nil
-    }
-    
+    // dictionary associating button labels to operations, mostly defined as closures
     private var operations: [String:Operation] = [
         "+": Operation.binary({$0 + $1}),
         "-": Operation.binary({$0 - $1}),
@@ -93,11 +107,23 @@ struct CalculatorBrain {
         "=": Operation.equals
     ]
     
+    // resets the state of the calculator
+    public mutating func reset(){
+        // should reset function stack
+        acc = 0
+        pendingOperation = nil
+        lastOperation = nil
+        history = "0"
+        lastButton = nil
+    }
+    
+    // executes an operation based on the given button and display input,
+    // returns the newest display value to be output
     public mutating func exec(button: String, input:Double) -> Double {
-        // in Germany, it is impossible to compare two companies in ppt
         if let operation = operations[button] {
             switch(operation){
             case .binary(let function):
+                // update the current operation history
                 if history == "0" || pendingOperation == nil {
                     history = "\(input) \(button) "
                 }
@@ -106,6 +132,7 @@ struct CalculatorBrain {
                 }
                 lastButton = button
                 
+                // handle the previous binary expression if it exists, and enqueue the current one
                 if pendingOperation == nil {
                     acc = input
                     pendingOperation = function
@@ -115,17 +142,22 @@ struct CalculatorBrain {
                     pendingOperation = function
                 }
             case .unary(let function):
-                acc = function(input)
+                // update the current operation history
                 if button == "x²" {
                     history = "(\(input))²"
                 }
                 else {
                     history = "\(button)(\(input))"
                 }
+                
+                // handle the current unary operation
+                acc = function(input)
                 lastButton = nil
             case .constant(let value):
                 return value
             case .equals:
+                // handle the last pending binary operation if it exists,
+                // or repeat the last executed binary operation if one exists
                 if pendingOperation == nil && lastOperation == nil {
                     acc = input
                     history = String(input)
@@ -147,6 +179,7 @@ struct CalculatorBrain {
         else { return input }
     }
     
+    // obtains the latest value of the current operation history
     public func getHistory() -> String {
         return history
     }

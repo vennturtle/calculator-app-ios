@@ -10,19 +10,14 @@ import UIKit
 
 class ViewController: UIViewController {
 
+    // displays the current operation history
     @IBOutlet weak var history: UILabel!
-    @IBOutlet weak var output: UILabel!
-    var userIsTyping = false
     
-    override func viewDidLoad() {
-        super.viewDidLoad()
-        // Do any additional setup after loading the view, typically from a nib.
-    }
-
-    override func didReceiveMemoryWarning() {
-        super.didReceiveMemoryWarning()
-        // Dispose of any resources that can be recreated.
-    }
+    // displays the current display value
+    @IBOutlet weak var output: UILabel!
+    
+    // whether or not user has started entering a new value
+    var userIsTyping = false
     
     private var brain: CalculatorBrain = CalculatorBrain()
     private var memory = 0.0
@@ -38,6 +33,7 @@ class ViewController: UIViewController {
         output.text = display.value
     }
     
+    // handles input whenever user taps on negative sign
     @IBAction func negate(_ sender: UIButton) {
         if !userIsTyping {
             display.clear()
@@ -47,6 +43,7 @@ class ViewController: UIViewController {
         output.text = display.value
     }
     
+    // handles input whenever user taps on decimal point
     @IBAction func decimate(_ sender: UIButton) {
         if !userIsTyping {
             display.clear()
@@ -56,6 +53,8 @@ class ViewController: UIViewController {
         output.text = display.value
     }
     
+    // if user presses clear once, it clears the current display
+    // if user presses clear once more, it resets the state of the calculator brain
     @IBAction func clear(_ sender: UIButton) {
         if display.value == "0" || !userIsTyping {
             brain.reset()
@@ -66,6 +65,9 @@ class ViewController: UIViewController {
         history.text = brain.getHistory()
         userIsTyping = false
     }
+    
+    // performs a calculation whenever an operator is pressed,
+    // updates the display with the results of the calculation
     @IBAction func operate(_ sender: UIButton) {
         userIsTyping = false
         let newValue = brain.exec(button: sender.currentTitle!, input: Double(display.value)!)
@@ -74,6 +76,7 @@ class ViewController: UIViewController {
         history.text = brain.getHistory()
     }
     
+    // performs an operation involving the calculator memory
     @IBAction func memoryOperate(_ sender: UIButton) {
         let function = sender.currentTitle!
         switch(function){
