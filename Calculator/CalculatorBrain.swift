@@ -51,8 +51,8 @@ struct CalculatorDisplay {
 
 struct CalculatorBrain {
     private var acc: Double = 0
+    private var pendingOperation: ((Double, Double) -> Double)?
     private var lastOperation: (((Double, Double) -> Double), Double)?
-    private var todo: ((Double, Double) -> Double)?
     
     private enum Operation {
         case constant(Double)
@@ -64,7 +64,7 @@ struct CalculatorBrain {
     public mutating func reset(){
         // should reset function stack
         acc = 0
-        todo = nil
+        pendingOperation = nil
         lastOperation = nil
     }
     
@@ -89,32 +89,34 @@ struct CalculatorBrain {
         if let operation = operations[button] {
             switch(operation){
             case .binary(let function):
-                if todo != nil {
-                    acc = todo!(acc, input)
+                if pendingOperation == nil {
+                    acc = input
+                    pendingOperation = function
                 }
                 else {
-                    acc = input
+                    acc = pendingOperation!(acc, input)
+                    pendingOperation = function
                 }
-                todo = function
             case .unary(let function):
                 acc = function(input)
             case .constant(let value):
                 acc = value
             case .equals:
-                if let (function, last) = lastOperation {
-                    acc = function(acc, last)
+                if pendingOperation == nil && lastOperation == nil {
+                    acc = input
                 }
-                else if todo != nil {
-                    acc = todo!(acc, input)
-                    lastOperation = (todo!, input)
+                else if pendingOperation != nil {
+                    acc = pendingOperation!(acc, input)
+                    lastOperation = (pendingOperation!, input)
                 }
-            default:
-                return acc
+                else if lastOperation != nil {
+                    let (function, lastInput) = lastOperation!
+                    acc = function(acc, lastInput)
+                }
+                pendingOperation = nil
             }
             return acc
         }
-        else {
-            return input
-        }
+        else { return input }
     }
 }
