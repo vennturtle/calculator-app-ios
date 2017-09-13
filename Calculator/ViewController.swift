@@ -51,11 +51,13 @@ class ViewController: UIViewController {
     }
     
     @IBAction func clear(_ sender: UIButton) {
-        display.clear()
         if display.value == "0" || !userIsTyping {
             brain.reset()
         }
+        display.clear()
+        
         output.text = display.value
+        history.text = brain.getHistory()
         userIsTyping = false
     }
     @IBAction func operate(_ sender: UIButton) {
@@ -63,6 +65,7 @@ class ViewController: UIViewController {
         let newValue = brain.exec(button: sender.currentTitle!, input: Double(display.value)!)
         display.value = String(newValue)
         output.text = display.value
+        history.text = brain.getHistory()
     }
     
     @IBAction func memoryOperate(_ sender: UIButton) {

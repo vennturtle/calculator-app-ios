@@ -53,6 +53,8 @@ struct CalculatorBrain {
     private var acc: Double = 0
     private var pendingOperation: ((Double, Double) -> Double)?
     private var lastOperation: (((Double, Double) -> Double), Double)?
+    private var history = "0"
+    private var lastButton: String?
     
     private enum Operation {
         case constant(Double)
@@ -66,6 +68,8 @@ struct CalculatorBrain {
         acc = 0
         pendingOperation = nil
         lastOperation = nil
+        history = "0"
+        lastButton = nil
     }
     
     private var operations: [String:Operation] = [
@@ -89,6 +93,14 @@ struct CalculatorBrain {
         if let operation = operations[button] {
             switch(operation){
             case .binary(let function):
+                if history == "0" || pendingOperation == nil {
+                    history = "\(input) \(button) "
+                }
+                else {
+                    history += "\(input) \(button) "
+                }
+                lastButton = button
+                
                 if pendingOperation == nil {
                     acc = input
                     pendingOperation = function
@@ -99,24 +111,38 @@ struct CalculatorBrain {
                 }
             case .unary(let function):
                 acc = function(input)
+                if button == "x²" {
+                    history = "(\(input))²"
+                }
+                else {
+                    history = "\(button)(\(input))"
+                }
+                lastButton = nil
             case .constant(let value):
                 acc = value
             case .equals:
                 if pendingOperation == nil && lastOperation == nil {
                     acc = input
+                    history = String(input)
                 }
                 else if pendingOperation != nil {
                     acc = pendingOperation!(acc, input)
                     lastOperation = (pendingOperation!, input)
+                    history += String(input)
                 }
                 else if lastOperation != nil {
                     let (function, lastInput) = lastOperation!
                     acc = function(acc, lastInput)
+                    history += " \(lastButton!) \(lastInput)"
                 }
                 pendingOperation = nil
             }
             return acc
         }
         else { return input }
+    }
+    
+    public func getHistory() -> String {
+        return history
     }
 }
