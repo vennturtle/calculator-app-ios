@@ -77,7 +77,7 @@ struct CalculatorBrain {
     private var lastOperation: (((Double, Double) -> Double), Double)?
     
     // current operation history
-    private var history = "0"
+    private var operationHistory = "0"
     
     // last-pressed button
     private var lastButton: String?
@@ -113,7 +113,7 @@ struct CalculatorBrain {
         acc = 0
         pendingOperation = nil
         lastOperation = nil
-        history = "0"
+        operationHistory = "0"
         lastButton = nil
     }
     
@@ -124,11 +124,11 @@ struct CalculatorBrain {
             switch(operation){
             case .binary(let function):
                 // update the current operation history
-                if history == "0" || pendingOperation == nil {
-                    history = "\(input) \(button) "
+                if operationHistory == "0" || pendingOperation == nil {
+                    operationHistory = "\(input) \(button) "
                 }
                 else {
-                    history += "\(input) \(button) "
+                    operationHistory += "\(input) \(button) "
                 }
                 lastButton = button
                 
@@ -142,17 +142,27 @@ struct CalculatorBrain {
                     pendingOperation = function
                 }
             case .unary(let function):
-                // update the current operation history
-                if button == "x²" {
-                    history = "(\(input))²"
+                // handle pending operation if one exists
+                if pendingOperation != nil {
+                    operationHistory = "\(acc) \(lastButton!) \(input)"
+                    acc = pendingOperation!(acc, input);
+                    pendingOperation = nil
                 }
                 else {
-                    history = "\(button)(\(input))"
+                    operationHistory = String(input)
+                }
+                
+                // update the current operation history
+                if button == "x²" {
+                    operationHistory = "(\(operationHistory))²"
+                }
+                else {
+                    operationHistory = "\(button)(\(operationHistory))"
                 }
                 
                 // handle the current unary operation
                 acc = function(input)
-                lastButton = nil
+                lastButton = button
             case .constant(let value):
                 return value
             case .equals:
@@ -160,17 +170,17 @@ struct CalculatorBrain {
                 // or repeat the last executed binary operation if one exists
                 if pendingOperation == nil && lastOperation == nil {
                     acc = input
-                    history = String(input)
+                    operationHistory = String(input)
                 }
                 else if pendingOperation != nil {
                     acc = pendingOperation!(acc, input)
                     lastOperation = (pendingOperation!, input)
-                    history += String(input)
+                    operationHistory += String(input)
                 }
                 else if lastOperation != nil {
                     let (function, lastInput) = lastOperation!
                     acc = function(acc, lastInput)
-                    history += " \(lastButton!) \(lastInput)"
+                    operationHistory += " \(lastButton!) \(lastInput)"
                 }
                 pendingOperation = nil
             }
@@ -179,8 +189,15 @@ struct CalculatorBrain {
         else { return input }
     }
     
-    // obtains the latest value of the current operation history
-    public func getHistory() -> String {
-        return history
+    // computed property for the latest value of the current operation history
+    public var history: String {
+        if operationHistory.characters.count < 34 {
+            return operationHistory
+        }
+        else {
+            let index = operationHistory.index(operationHistory.endIndex, offsetBy: -34)
+            return operationHistory.substring(from: index)
+        }
+        
     }
 }

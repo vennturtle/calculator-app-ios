@@ -62,7 +62,7 @@ class ViewController: UIViewController {
         display.clear()
         
         output.text = display.value
-        history.text = brain.getHistory()
+        history.text = brain.history
         userIsTyping = false
     }
     
@@ -73,7 +73,7 @@ class ViewController: UIViewController {
         let newValue = brain.exec(button: sender.currentTitle!, input: Double(display.value)!)
         display.value = String(newValue)
         output.text = display.value
-        history.text = brain.getHistory()
+        history.text = brain.history
     }
     
     // performs an operation involving the calculator memory
