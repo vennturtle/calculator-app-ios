@@ -198,6 +198,10 @@ struct CalculatorBrain {
             let index = operationHistory.index(operationHistory.endIndex, offsetBy: -34)
             return operationHistory.substring(from: index)
         }
-        
     }
+    
+    public mutating func setOperand(variableName: String){
+        variableValues[variableName] = 0.0
+    }
+    var variableValues: [String:Double] = [:]
 }
