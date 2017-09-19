@@ -134,6 +134,8 @@ struct CalculatorBrain {
     }
     
     // history
+    // TODO: currentHistoryIndex that stores how far back history should how
+    // perhaps this should be set whenever equals is pressed
     public var hist: String {
         if stack.isEmpty {
             return "0"
@@ -192,45 +194,46 @@ struct CalculatorBrain {
         if let operation = operations[button] {
             switch(operation){
             case .binary(let function):
-                // update the current operation history
-                if operationHistory == "0" || pendingOperation == nil {
-                    operationHistory = "\(input) \(button) "
-                }
-                else {
-                    operationHistory += "\(input) \(button) "
-                }
                 lastButton = button
                 
                 // handle the previous binary expression if it exists, and enqueue the current one
                 if pendingOperation == nil {
                     acc = input
                     pendingOperation = function
+                    stack.append(Command(previousValue: acc, button: button, operation: operation, operand: nil))
                 }
                 else {
+                    // pop the pending binary operation and fill in the operand
+                    var cmd = stack.popLast()!
+                    cmd.operand = input
+                    
+                    // push the command back onto the stack
+                    stack.append(cmd)
+                    
                     acc = pendingOperation!(acc, input)
                     pendingOperation = function
                 }
             case .unary(let function):
                 // handle pending operation if one exists
                 if pendingOperation != nil {
-                    operationHistory = "\(acc) \(lastButton!) \(input)"
+                    // pop the pending binary operation and fill in the operand
+                    var cmd = stack.popLast()!
+                    cmd.operand = input
+                    
+                    // push the command back onto the stack
+                    stack.append(cmd)
+
                     acc = pendingOperation!(acc, input);
                     pendingOperation = nil
                 }
                 else {
-                    operationHistory = String(input)
+                    acc = input
                 }
                 
-                // update the current operation history
-                if button == "x²" {
-                    operationHistory = "(\(operationHistory))²"
-                }
-                else {
-                    operationHistory = "\(button)(\(operationHistory))"
-                }
+                stack.append(Command(previousValue: acc, button: button, operation: operation, operand: nil))
                 
                 // handle the current unary operation
-                acc = function(input)
+                acc = function(acc)
                 lastButton = button
             case .constant(let value):
                 return value
@@ -239,17 +242,22 @@ struct CalculatorBrain {
                 // or repeat the last executed binary operation if one exists
                 if pendingOperation == nil && lastOperation == nil {
                     acc = input
-                    operationHistory = String(input)
                 }
                 else if pendingOperation != nil {
+                    // pop the pending binary operation and fill in the operand
+                    var cmd = stack.popLast()!
+                    cmd.operand = input
+                    
+                    // push the command back onto the stack
+                    stack.append(cmd)
+                    
                     acc = pendingOperation!(acc, input)
                     lastOperation = (pendingOperation!, input)
-                    operationHistory += String(input)
                 }
                 else if lastOperation != nil {
+                    stack.append(stack.last!)
                     let (function, lastInput) = lastOperation!
                     acc = function(acc, lastInput)
-                    operationHistory += " \(lastButton!) \(lastInput)"
                 }
                 pendingOperation = nil
             }
@@ -258,15 +266,8 @@ struct CalculatorBrain {
         else { return input }
     }
     
-    // computed property for the latest value of the current operation history
     public var history: String {
-        if operationHistory.characters.count < 34 {
-            return operationHistory
-        }
-        else {
-            let index = operationHistory.index(operationHistory.endIndex, offsetBy: -34)
-            return operationHistory.substring(from: index)
-        }
+        return hist
     }
     
     public mutating func setOperand(variableName: String){
