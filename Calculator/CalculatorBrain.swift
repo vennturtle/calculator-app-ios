@@ -79,6 +79,74 @@ struct CalculatorBrain {
     // current operation history
     private var operationHistory = "0"
     
+    // command stack
+    private var stack: [Command] = []
+    
+    // describes a single command on the stack
+    private struct Command {
+        public var previousValue: Double
+        public var button: String
+        public var operation: Operation
+        public var operand: Double?
+        
+        public var isPending: Bool {
+            switch(operation){
+            case .binary:
+                return operand == nil
+            default:
+                return false
+            }
+        }
+        
+        public func execute(acc: Double) -> Double {
+            switch(operation){
+            case .binary(let function):
+                if operand != nil {
+                    return function(acc, operand!)
+                }
+                else {
+                    return acc
+                }
+            case .unary(let function):
+                return function(acc)
+            case .constant(let value):
+                return value
+            default:
+                return acc
+            }
+        }
+        
+        public func modifyHistory(history: String) -> String {
+            switch(operation){
+            case .binary:
+                return "\(history) \(button) " + (operand != nil ? "\(operand!)" : "")
+            case .unary:
+                if button == "x²" {
+                    return "(\(history))²"
+                }
+                else {
+                    return "\(button)(\(history))"
+                }
+            default:
+                return history
+            }
+        }
+    }
+    
+    // history
+    public var hist: String {
+        if stack.isEmpty {
+            return "0"
+        }
+        else {
+            var currentHistory = String(stack.first!.previousValue)
+            for cmd in stack {
+                currentHistory = cmd.modifyHistory(history: currentHistory)
+            }
+            return currentHistory
+        }
+    }
+    
     // last-pressed button
     private var lastButton: String?
     
@@ -115,6 +183,7 @@ struct CalculatorBrain {
         lastOperation = nil
         operationHistory = "0"
         lastButton = nil
+        stack = []
     }
     
     // executes an operation based on the given button and display input,
