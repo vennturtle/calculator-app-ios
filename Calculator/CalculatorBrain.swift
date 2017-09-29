@@ -70,15 +70,6 @@ struct CalculatorBrain {
     // current working value
     private var acc: Double = 0
     
-    // next operation that is waiting on an input from the user to be completed
-    private var pendingOperation: ((Double, Double) -> Double)?
-    
-    // last completed operation, allows user to repeat operation upon pressing "equals" button
-    private var lastOperation: (((Double, Double) -> Double), Double)?
-    
-    // current operation history
-    private var operationHistory = "0"
-    
     // command stack
     private var stack: [Command] = []
     
@@ -98,6 +89,15 @@ struct CalculatorBrain {
             switch(operation){
             case .binary:
                 return operand == nil
+            default:
+                return false
+            }
+        }
+        
+        public var isUnary: Bool {
+            switch(operation){
+            case .unary:
+                return true
             default:
                 return false
             }
@@ -140,25 +140,6 @@ struct CalculatorBrain {
         }
     }
     
-    // history
-    // TODO: currentHistoryIndex that stores how far back history should how
-    // perhaps this should be set whenever equals is pressed
-    public var hist: String {
-        if stack.isEmpty {
-            return "0"
-        }
-        else {
-            var currentHistory = String(stack.first!.previousValue)
-            for cmd in stack {
-                currentHistory = cmd.modifyHistory(history: currentHistory)
-            }
-            return currentHistory
-        }
-    }
-    
-    // last-pressed button
-    private var lastButton: String?
-    
     // describes types of operations calculator can do, mostly defined as closures
     private enum Operation {
         case constant(Double)
@@ -186,17 +167,11 @@ struct CalculatorBrain {
     
     // resets the state of the calculator
     public mutating func reset(){
-        // should reset function stack
         acc = 0
-        pendingOperation = nil
-        lastOperation = nil
-        operationHistory = "0"
-        lastButton = nil
         stack = []
     }
     
-    // executes an operation based on the given button and display input,
-    // returns the newest display value to be output
+    // executes an operation based on a given button and display input and returns the resulting acc
     public mutating func exec(button: String, input:Double) -> Double {
         if let operation = operations[button] {
             switch(operation){
@@ -215,11 +190,15 @@ struct CalculatorBrain {
                     stack.append(oldCmd)
                     acc = stack.last!.execute(on: acc)
                 }
-                else if stack.last!.button == "=" {
+                else if stack.last!.button == "=" { // if last command was equals, clear the stack
                     let equalsCmd = stack.popLast()!
                     if equalsCmd.previousValue != input { // this implies user set new input
                         acc = input
                     }
+                    stack = []
+                }
+                else if stack.last!.isUnary && acc != input { // if last command was unary and the display was changed, clear the stack
+                    acc = input
                     stack = []
                 }
                 
@@ -231,20 +210,21 @@ struct CalculatorBrain {
                 if stack.isEmpty {
                     acc = input
                 }
-                else if stack.last!.isPending {
-                    // pop the pending binary operation and fill in the operand
+                else if stack.last!.isPending { // handle pending binary operation
                     var oldCmd = stack.popLast()!
                     oldCmd.operand = input
-                    
-                    // push the command back onto the stack
                     stack.append(oldCmd)
                     acc = stack.last!.execute(on: acc)
                 }
-                else if stack.last!.button == "=" {
-                    let equalsCmd = stack.popLast()!
-                    if equalsCmd.previousValue != input { // this implies user set new input
+                else if stack.last!.button == "=" { // if last command was equals, clear the stack
+                    let lastCmd = stack.popLast()!
+                    if lastCmd.previousValue != input { // this implies user set new input
                         acc = input
                     }
+                    stack = []
+                }
+                else if stack.last!.isUnary && acc != input { // if last command was unary and the display was changed, clear the stack
+                    acc = input
                     stack = []
                 }
                 
@@ -255,25 +235,22 @@ struct CalculatorBrain {
                 
             case .constant(let value):
                 return value
+                
             case .equals:
                 if stack.isEmpty { // set acc to input
                     acc = input
                     
-                    // push equals command onto the stack
+                    // push new equals command onto the stack
                     let equalsCmd = Command(previousValue: acc, button: button, operation: operation, operand: nil)
                     stack.append(equalsCmd)
                 }
-                else if stack.last!.isPending { // complete pending command
-                    
-                    // pop the pending binary operation and fill in the operand
-                    var cmd = stack.popLast()!
-                    cmd.operand = input
-                    
-                    // push the command back onto the stack and execute
-                    stack.append(cmd)
+                else if stack.last!.isPending { // handle pending binary operation
+                    var oldCmd = stack.popLast()!
+                    oldCmd.operand = input
+                    stack.append(oldCmd)
                     acc = stack.last!.execute(on: acc)
                     
-                    // push equals command onto the stack
+                    // push new equals command onto the stack
                     let equalsCmd = Command(previousValue: acc, button: button, operation: operation, operand: nil)
                     stack.append(equalsCmd)
                 }
@@ -299,7 +276,7 @@ struct CalculatorBrain {
                     equalsCmd.previousValue = acc
                     stack.append(equalsCmd)
                 }
-                else {
+                else { // redo last unary command
                     if let last = stack.last {
                         var lastCmd = last
                         lastCmd.previousValue = acc
@@ -308,7 +285,6 @@ struct CalculatorBrain {
                         acc = stack.last!.execute(on: acc)
                     }
                 }
-                pendingOperation = nil
             }
             print("\(stack)") // debug
             return acc
@@ -316,9 +292,20 @@ struct CalculatorBrain {
         else { return input }
     }
     
+    // computer property showing command history
     public var history: String {
-        return hist
+        if stack.isEmpty {
+            return "0"
+        }
+        else {
+            var hist = String(stack.first!.previousValue)
+            for cmd in stack {
+                hist = cmd.modifyHistory(history: hist)
+            }
+            return hist
+        }
     }
+
     
     public mutating func setOperand(variableName: String){
         variableValues[variableName] = 0.0
