@@ -21,47 +21,47 @@ class ViewController: UIViewController {
     
     private var brain: CalculatorBrain = CalculatorBrain()
     private var memory = 0.0
-    private var display: CalculatorDisplay = CalculatorDisplay()
+    private var input: CalculatorInput = CalculatorInput()
     
     // handles input whenever user taps on a digit button
     @IBAction func enterDig(_ sender: UIButton) {
         if !userIsTyping {
-            display.clear()
+            input.clear()
             userIsTyping = true
         }
-        display.append(digit: sender.currentTitle!)
-        output.text = display.value
+        input.append(digit: sender.currentTitle!)
+        output.text = input.value
     }
     
     // handles input whenever user taps on negative sign
     @IBAction func negate(_ sender: UIButton) {
         if !userIsTyping {
-            display.clear()
+            input.clear()
             userIsTyping = true
         }
-        display.negate()
-        output.text = display.value
+        input.negate()
+        output.text = input.value
     }
     
     // handles input whenever user taps on decimal point
     @IBAction func decimate(_ sender: UIButton) {
         if !userIsTyping {
-            display.clear()
+            input.clear()
             userIsTyping = true
         }
-        display.decimal()
-        output.text = display.value
+        input.decimal()
+        output.text = input.value
     }
     
     // if user presses clear once, it clears the current display
     // if user presses clear once more, it resets the state of the calculator brain
     @IBAction func clear(_ sender: UIButton) {
-        if display.value == "0" || !userIsTyping {
+        if input.value == "0" || !userIsTyping {
             brain.reset()
         }
-        display.clear()
+        input.clear()
         
-        output.text = display.value
+        output.text = input.value
         history.text = brain.history
         userIsTyping = false
     }
@@ -70,9 +70,9 @@ class ViewController: UIViewController {
     // updates the display with the results of the calculation
     @IBAction func operate(_ sender: UIButton) {
         userIsTyping = false
-        let newValue = brain.exec(button: sender.currentTitle!, input: Double(display.value)!)
-        display.value = String(newValue)
-        output.text = display.value
+        let newValue = brain.execute(button: sender.currentTitle!, input: Double(input.value)!)
+        input = CalculatorInput(newValue)
+        output.text = input.value
         history.text = brain.history
     }
     
@@ -83,18 +83,18 @@ class ViewController: UIViewController {
         case "MC":
             memory = 0.0
         case "MR":
-            display.value = String(memory)
-            output.text = display.value
+            input = CalculatorInput(memory)
+            output.text = input.value
             userIsTyping = false
         case "MS":
-            memory = Double(display.value)!
+            memory = Double(input.value)!
         case "M+":
-            memory += Double(display.value)!
-            display.value = String(memory)
-            output.text = display.value
+            memory += Double(input.value)!
+            input = CalculatorInput(memory)
+            output.text = input.value
             userIsTyping = false
         default:
-            output.text = display.value
+            output.text = input.value
         }
     }
 }

@@ -9,8 +9,18 @@
 import Foundation
 
 // Stores the value currently being entered by the user, as a string
-struct CalculatorDisplay {
+struct CalculatorInput {
     private var rawValue = "0"
+    
+    init() {}
+    init(_ value: Double){
+        rawValue = String(value)
+    }
+    
+    // computed property for accessing the current value of the input
+    public var value: String {
+        return rawValue
+    }
     
     // computed property detecting if the current input is at its default state
     public var hasValue: Bool {
@@ -53,16 +63,6 @@ struct CalculatorDisplay {
             rawValue += "."
         }
     }
-    
-    // computed property for accessing the current value of the input
-    public var value: String {
-        get {
-            return rawValue
-        }
-        set(newValue) {
-            rawValue = newValue
-        }
-    }
 }
 
 // Describes the logic behind an operating calculator
@@ -83,6 +83,10 @@ struct CalculatorBrain {
         public var description: String {
             let str = "\(previousValue) -> \(button)"
             return "(" + str + (operand != nil ? "\(operand!)" : "?") + ")"
+        }
+        
+        public var result: Double {
+            return execute(on: previousValue)
         }
         
         public var isPending: Bool {
@@ -172,7 +176,7 @@ struct CalculatorBrain {
     }
     
     // executes an operation based on a given button and display input and returns the resulting acc
-    public mutating func exec(button: String, input:Double) -> Double {
+    public mutating func execute(button: String, input:Double) -> Double {
         if let operation = operations[button] {
             switch(operation){
             case .binary:
