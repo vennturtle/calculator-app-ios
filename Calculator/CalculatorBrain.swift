@@ -90,8 +90,8 @@ struct CalculatorBrain {
         public var operand: Double?
         
         public var description: String {
-            let str = "pv: \(previousValue), btn: \(button), "
-            return "cmd(" + str + "operand: " + (operand != nil ? "\(operand!)" : "nil") + ")"
+            let str = "\(previousValue) -> \(button)"
+            return "(" + str + (operand != nil ? "\(operand!)" : "?") + ")"
         }
         
         public var isPending: Bool {
@@ -132,6 +132,8 @@ struct CalculatorBrain {
                 else {
                     return "\(button)(\(history))"
                 }
+            case .equals:
+                return history + " ="
             default:
                 return history
             }
@@ -199,73 +201,116 @@ struct CalculatorBrain {
         if let operation = operations[button] {
             switch(operation){
             case .binary:
-                // handle the previous binary expression if it exists, and enqueue the current one
-                if !stack.isEmpty && stack.last!.isPending {
-                    // pop the pending binary operation and fill in the operand
-                    var cmd = stack.popLast()!
-                    cmd.operand = input
-                    
-                    // push the command back onto the stack
-                    stack.append(cmd)
-                    acc = stack.last!.execute(on: acc)
-                    
-                    //acc = pendingOperation!(acc, input)
-                    //pendingOperation = function
-                }
-                else {
+                // handle previous command if one exists
+                if stack.isEmpty { // initialize acc to current input
                     acc = input
-                    stack.append(Command(previousValue: acc, button: button, operation: operation, operand: nil))
                 }
+                else if stack.last!.isPending { // handle pending binary operation
+                    
+                    // pop the pending binary operation and fill in the operand
+                    var oldCmd = stack.popLast()!
+                    oldCmd.operand = input
+                    
+                    // push the command back onto the stack and execute
+                    stack.append(oldCmd)
+                    acc = stack.last!.execute(on: acc)
+                }
+                else if stack.last!.button == "=" {
+                    let equalsCmd = stack.popLast()!
+                    if equalsCmd.previousValue != input { // this implies user set new input
+                        acc = input
+                    }
+                    stack = []
+                }
+                
+                // enqueue new pending binary operation
+                let newCmd = Command(previousValue: acc, button: button, operation: operation, operand: nil)
+                stack.append(newCmd)
+                
             case .unary:
-                // handle pending operation if one exists
-                if !stack.isEmpty && stack.last!.isPending {
-                    // pop the pending binary operation and fill in the operand
-                    var cmd = stack.popLast()!
-                    cmd.operand = input
-                    
-                    // push the command back onto the stack
-                    stack.append(cmd)
-                    acc = stack.last!.execute(on: acc)
-
-                    //acc = pendingOperation!(acc, input);
-                    //pendingOperation = nil
-                }
-                else {
-                    acc = input
-                }
-                
-                stack.append(Command(previousValue: acc, button: button, operation: operation, operand: nil))
-                
-                // handle the current unary operation
-                acc = stack.last!.execute(on: acc)
-            case .constant(let value):
-                return value
-            case .equals:
-                // handle the last pending binary operation if it exists,
-                // or repeat the last executed binary operation if one exists
                 if stack.isEmpty {
                     acc = input
                 }
                 else if stack.last!.isPending {
                     // pop the pending binary operation and fill in the operand
+                    var oldCmd = stack.popLast()!
+                    oldCmd.operand = input
+                    
+                    // push the command back onto the stack
+                    stack.append(oldCmd)
+                    acc = stack.last!.execute(on: acc)
+                }
+                else if stack.last!.button == "=" {
+                    let equalsCmd = stack.popLast()!
+                    if equalsCmd.previousValue != input { // this implies user set new input
+                        acc = input
+                    }
+                    stack = []
+                }
+                
+                // enqueue and execute new expression
+                let newCmd = Command(previousValue: acc, button: button, operation: operation, operand: nil)
+                stack.append(newCmd)
+                acc = stack.last!.execute(on: acc)
+                
+            case .constant(let value):
+                return value
+            case .equals:
+                if stack.isEmpty { // set acc to input
+                    acc = input
+                    
+                    // push equals command onto the stack
+                    let equalsCmd = Command(previousValue: acc, button: button, operation: operation, operand: nil)
+                    stack.append(equalsCmd)
+                }
+                else if stack.last!.isPending { // complete pending command
+                    
+                    // pop the pending binary operation and fill in the operand
                     var cmd = stack.popLast()!
                     cmd.operand = input
                     
-                    // push the command back onto the stack
+                    // push the command back onto the stack and execute
                     stack.append(cmd)
-                    
                     acc = stack.last!.execute(on: acc)
                     
-                    //acc = pendingOperation!(acc, input)
-                    //lastOperation = (pendingOperation!, input)
+                    // push equals command onto the stack
+                    let equalsCmd = Command(previousValue: acc, button: button, operation: operation, operand: nil)
+                    stack.append(equalsCmd)
+                }
+                else if stack.last!.button == "=" { // redo last binary command before last equals
+                    
+                    // pop last equals command
+                    var equalsCmd = stack.popLast()!
+                    
+                    // copy last command if it exists and update the previous value
+                    if let last = stack.last {
+                        var lastCmd = last
+                        lastCmd.previousValue = acc
+                        
+                        // push copied command onto the stack and execute
+                        stack.append(lastCmd)
+                        acc = stack.last!.execute(on: acc)
+                    }
+                    else {
+                        acc = input
+                    }
+                    
+                    // update equals command with new acc and push back onto stack
+                    equalsCmd.previousValue = acc
+                    stack.append(equalsCmd)
                 }
                 else {
-                    stack.append(stack.last!)
-                    acc = stack.last!.execute(on: acc)
+                    if let last = stack.last {
+                        var lastCmd = last
+                        lastCmd.previousValue = acc
+                        
+                        stack.append(lastCmd)
+                        acc = stack.last!.execute(on: acc)
+                    }
                 }
                 pendingOperation = nil
             }
-            print("\(stack)")
+            print("\(stack)") // debug
             return acc
         }
         else { return input }
