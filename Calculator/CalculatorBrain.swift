@@ -342,7 +342,6 @@ struct CalculatorBrain {
     
     // undoes last operation and returns previous operand
     public mutating func undo() -> (displayValue: Double, userIsTyping: Bool) {
-        //print("\(stack)") // debug
         if let undoneCmd = stack.popLast() {
             if let last = stack.last {
                 switch(last.operation){
@@ -353,28 +352,25 @@ struct CalculatorBrain {
                     acc = lastCmd.previousValue
                     stack.append(lastCmd)
                     
-                    print("undo -> \(stack)") // debug
+                    print("b undo -> \(stack)") // debug
                     return (displayValue: lastOperand, userIsTyping: true)
                 
                 case .unary:
                     acc = undoneCmd.previousValue
                     
-                    print("undo -> \(stack)") // debug
+                    print("u undo -> \(stack)") // debug
                     return (displayValue: acc, userIsTyping: false)
                 default:
                     
-                    print("undo -> \(stack)") // debug
+                    print("d undo -> \(stack)") // debug
                     return (displayValue: acc, userIsTyping: false)
                 }
             }
-            else {
-                
-                print("undo -> \(stack)") // debug
-                return (displayValue: undoneCmd.previousValue, userIsTyping: false)
+            else { // the stack is now empty
+                print("e undo -> \(stack)") // debug
+                return (displayValue: undoneCmd.previousValue, userIsTyping: true)
             }
         }
-        
-        print("\(stack)") // debug
         return (displayValue: 0, userIsTyping: false)
     }
     

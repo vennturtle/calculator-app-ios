@@ -16,6 +16,9 @@ class ViewController: UIViewController {
     // displays the current display value
     @IBOutlet weak var output: UILabel!
     
+    // holds the current variable label
+    @IBOutlet weak var variable: UITextField!
+    
     // whether or not user has started entering a new value
     var userIsTyping = false
     
@@ -110,6 +113,21 @@ class ViewController: UIViewController {
             userIsTyping = userIsNowTyping
             output.text = input.value
             history.text = brain.history
+        }
+    }
+    
+    // uses the currently selected variable as input
+    @IBAction func variableRecall(_ sender: Any) {
+        if let label = variable.text {
+            input.setVar(label)
+            output.text = input.value
+        }
+    }
+    
+    // sets the value of the currently selected variable
+    @IBAction func variableSet(_ sender: Any) {
+        if let label = variable.text {
+            brain.variableValues[label] = Double(input.value)!
         }
     }
 }

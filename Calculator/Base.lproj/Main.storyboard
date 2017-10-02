@@ -386,6 +386,9 @@
                                 <state key="normal" title="VS">
                                     <color key="titleColor" white="1" alpha="1" colorSpace="calibratedWhite"/>
                                 </state>
+                                <connections>
+                                    <action selector="variableSet:" destination="BYZ-38-t0r" eventType="touchUpInside" id="Cgl-jf-At1"/>
+                                </connections>
                             </button>
                             <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="xa4-XX-z2W">
                                 <rect key="frame" x="92" y="163" width="64.5" height="64"/>
@@ -395,6 +398,9 @@
                                 <state key="normal" title="VR">
                                     <color key="titleColor" white="1" alpha="1" colorSpace="calibratedWhite"/>
                                 </state>
+                                <connections>
+                                    <action selector="variableRecall:" destination="BYZ-38-t0r" eventType="touchUpInside" id="qCN-Wl-UEo"/>
+                                </connections>
                             </button>
                             <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="57C-xl-7FR">
                                 <rect key="frame" x="20" y="163" width="64.5" height="64"/>
@@ -618,6 +624,7 @@
                     <connections>
                         <outlet property="history" destination="SnI-ET-chS" id="rpV-Sk-JCp"/>
                         <outlet property="output" destination="rpc-ka-VjO" id="dJ8-PX-f5W"/>
+                        <outlet property="variable" destination="3LC-F9-aDe" id="UHf-LZ-she"/>
                     </connections>
                 </viewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="dkx-z0-nzr" sceneMemberID="firstResponder"/>
