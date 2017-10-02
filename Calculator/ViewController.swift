@@ -97,5 +97,20 @@ class ViewController: UIViewController {
             output.text = input.value
         }
     }
+    
+    // if user is still typing, this deletes the character
+    @IBAction func undo(){
+        if userIsTyping && input.hasValue {
+            input.delete()
+            output.text = input.value
+        }
+        else {
+            let (oldValue, userIsNowTyping) = brain.undo()
+            input = CalculatorInput(oldValue)
+            userIsTyping = userIsNowTyping
+            output.text = input.value
+            history.text = brain.history
+        }
+    }
 }
 

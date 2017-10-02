@@ -11,6 +11,7 @@ import Foundation
 // Stores the value currently being entered by the user, as a string
 struct CalculatorInput {
     private var rawValue = "0"
+    var isVar = false
     
     init() {}
     init(_ value: Double){
@@ -32,10 +33,19 @@ struct CalculatorInput {
     // resets the current input
     public mutating func clear(){
         rawValue = "0"
+        isVar = false
+    }
+    
+    // sets current input to variable label
+    public mutating func setVar(_ varLabel: String){
+        rawValue = varLabel
+        isVar = true
     }
     
     // adds a digit to the end of the current input
     public mutating func append(digit: String){
+        if isVar { clear() }
+        
         if rawValue == "-0" {
             rawValue = "-\(digit)"
         }
@@ -47,8 +57,23 @@ struct CalculatorInput {
         }
     }
     
+    public mutating func delete(){
+        if isVar { clear() }
+        else if rawValue == "-0" || rawValue.characters.count == 1 {
+            rawValue = "0"
+        }
+        else if hasValue {
+            rawValue.remove(at: rawValue.index(before: rawValue.endIndex))
+            if rawValue == "-" {
+                rawValue = "-0"
+            }
+        }
+    }
+    
     // adds or removes a negative sign to the end of the current input
     public mutating func negate(){
+        if isVar { clear() }
+        
         if let index = rawValue.range(of: "-") { // detect if negative sign is currently present
             rawValue.remove(at: index.lowerBound)
         }
@@ -59,6 +84,7 @@ struct CalculatorInput {
     
     // adds a decimal point to the end of the current input, if one does not already exist
     public mutating func decimal(){
+        if isVar { clear() }
         if rawValue.range(of: ".") == nil { // detect if decimal point is currently present
             rawValue += "."
         }
@@ -101,6 +127,24 @@ struct CalculatorBrain {
         public var isUnary: Bool {
             switch(operation){
             case .unary:
+                return true
+            default:
+                return false
+            }
+        }
+        
+        public var isBinary: Bool {
+            switch(operation){
+            case .binary:
+                return true
+            default:
+                return false
+            }
+        }
+        
+        public var isEquals: Bool {
+            switch(operation){
+            case .equals:
                 return true
             default:
                 return false
@@ -294,6 +338,44 @@ struct CalculatorBrain {
             return acc
         }
         else { return input }
+    }
+    
+    // undoes last operation and returns previous operand
+    public mutating func undo() -> (displayValue: Double, userIsTyping: Bool) {
+        //print("\(stack)") // debug
+        if let undoneCmd = stack.popLast() {
+            if let last = stack.last {
+                switch(last.operation){
+                case .binary:
+                    var lastCmd = stack.popLast()!
+                    let lastOperand = lastCmd.operand!
+                    lastCmd.operand = nil
+                    acc = lastCmd.previousValue
+                    stack.append(lastCmd)
+                    
+                    print("undo -> \(stack)") // debug
+                    return (displayValue: lastOperand, userIsTyping: true)
+                
+                case .unary:
+                    acc = undoneCmd.previousValue
+                    
+                    print("undo -> \(stack)") // debug
+                    return (displayValue: acc, userIsTyping: false)
+                default:
+                    
+                    print("undo -> \(stack)") // debug
+                    return (displayValue: acc, userIsTyping: false)
+                }
+            }
+            else {
+                
+                print("undo -> \(stack)") // debug
+                return (displayValue: undoneCmd.previousValue, userIsTyping: false)
+            }
+        }
+        
+        print("\(stack)") // debug
+        return (displayValue: 0, userIsTyping: false)
     }
     
     // computer property showing command history
