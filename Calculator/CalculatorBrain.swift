@@ -129,24 +129,6 @@ struct CalculatorBrain {
             }
         }
         
-        public var isBinary: Bool {
-            switch(operation){
-            case .binary:
-                return true
-            default:
-                return false
-            }
-        }
-        
-        public var isEquals: Bool {
-            switch(operation){
-            case .equals:
-                return true
-            default:
-                return false
-            }
-        }
-        
         public func getPrev(_ variableValues: [String: Double]) -> Double{
             if previousValue is Double {
                 return previousValue as! Double
@@ -381,7 +363,7 @@ struct CalculatorBrain {
                     }
                 }
             }
-            print("\(stack)") // debug
+            // print("\(stack)") // debug
             return acc
         }
         else { return input }
@@ -399,22 +381,22 @@ struct CalculatorBrain {
                     acc = lastCmd.getPrev(variableValues)
                     stack.append(lastCmd)
                     
-                    print("b undo -> \(stack)") // debug
+                    // print("b undo -> \(stack)") // debug
                     return (displayValue: lastOperand, userIsTyping: true)
                 
                 case .unary:
                     acc = undoneCmd.getPrev(variableValues)
                     
-                    print("u undo -> \(stack)") // debug
+                    // print("u undo -> \(stack)") // debug
                     return (displayValue: acc as AnyObject, userIsTyping: false)
                 default:
                     
-                    print("d undo -> \(stack)") // debug
+                    // print("d undo -> \(stack)") // debug
                     return (displayValue: acc as AnyObject, userIsTyping: false)
                 }
             }
             else { // the stack is now empty
-                print("e undo -> \(stack)") // debug
+                // print("e undo -> \(stack)") // debug
                 return (displayValue: undoneCmd.previousValue, userIsTyping: true)
             }
         }
@@ -432,7 +414,7 @@ struct CalculatorBrain {
             let first = stack.first!.previousValue
             if first is String {
                 hist = first as! String
-                print("yeet (\(hist))")
+                // print("yeet (\(hist))")
             }
             else if first is Double {
                 hist = String(first as! Double)
