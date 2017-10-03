@@ -73,7 +73,13 @@ class ViewController: UIViewController {
     // updates the display with the results of the calculation
     @IBAction func operate(_ sender: UIButton) {
         userIsTyping = false
-        let newValue = brain.execute(button: sender.currentTitle!, input: Double(input.value)!)
+        var newValue: Double
+        if input.isVar {
+            newValue = brain.execute(button: sender.currentTitle!, operand: 0.0, label: input.value)
+        }
+        else {
+            newValue = brain.execute(button: sender.currentTitle!, operand: Double(input.value)!, label: nil)
+        }
         input = CalculatorInput(newValue)
         output.text = input.value
         history.text = brain.history
@@ -109,7 +115,13 @@ class ViewController: UIViewController {
         }
         else {
             let (oldValue, userIsNowTyping) = brain.undo()
-            input = CalculatorInput(oldValue)
+            if oldValue is String {
+                input = CalculatorInput()
+                input.setVar(oldValue as! String)
+            }
+            else if oldValue is Double {
+                input = CalculatorInput(oldValue as! Double)
+            }
             userIsTyping = userIsNowTyping
             output.text = input.value
             history.text = brain.history
